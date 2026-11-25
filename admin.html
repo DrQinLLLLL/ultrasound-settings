@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>后台管理 · Settings Admin</title>
+<style>
+:root{
+  --bg:#f3f5f9;--card:#fff;--text:#1f2937;--sub:#6b7280;--line:#e6eaf1;
+  --primary:#2563eb;--teal:#0d9488;--red:#dc2626;--amber:#b45309;
+  --shadow:0 2px 12px rgba(30,58,138,.07);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.5;padding-bottom:60px}
+.wrap{max-width:920px;margin:0 auto;padding:0 16px}
+header{background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;padding:18px 0 16px;box-shadow:0 3px 14px rgba(13,148,136,.25)}
+header .wrap{display:flex;align-items:center;gap:12px}
+header h1{font-size:17px;margin:0;font-weight:700}
+header p{margin:2px 0 0;font-size:11.5px;opacity:.85}
+.hd-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.hd-btn{border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;padding:6px 11px;border-radius:9px;font-size:12px;cursor:pointer;font-weight:600}
+.hd-btn:active{transform:scale(.96)}
+.card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px;margin:16px 0;border:1px solid var(--line)}
+.card h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.card h2 .badge{font-size:11px;background:var(--primary);color:#fff;padding:2px 8px;border-radius:10px;font-weight:600}
+label{display:block;font-size:12px;color:var(--sub);font-weight:600;margin:10px 0 4px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+textarea{resize:vertical;min-height:60px}
+.btn{border:0;border-radius:9px;padding:10px 16px;font-size:13.5px;cursor:pointer;font-weight:700;font-family:inherit}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-primary:active{transform:scale(.97)}
+.btn-ghost{background:#eef1f6;color:var(--text)}
+.btn-danger{background:#fee2e2;color:var(--red)}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>*{flex:1;min-width:150px}
+.row .shrink{flex:0 0 auto;min-width:auto}
+.hintbox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:12px}
+.hintbox.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.errbox{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px 12px;font-size:12.5px;display:none;margin-top:10px}
+.errbox.show{display:block}
+.status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--sub);flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:#9ca3af;flex:none}
+.dot.ok{background:#10b981}.dot.err{background:#ef4444}.dot.load{background:#f59e0b;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.toolbar input[type=search]{flex:1;min-width:180px}
+.toolbar select{width:auto;min-width:130px;flex:0 0 auto}
+.count{font-size:12px;color:var(--sub);white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11.5px;color:var(--sub);font-weight:700;position:sticky;top:0;background:#fff;z-index:1}
+tr:hover td{background:#f9fafb}
+.tag{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:6px;background:#f0f2f7;color:#616b7d;white-space:nowrap}
+.tag.p{background:#eaf1ff;color:#1d4ed8}
+.path-sm{font-size:11px;color:var(--sub);margin-top:2px}
+.ops{display:flex;gap:5px;white-space:nowrap}
+.tbl-wrap{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.empty{text-align:center;color:var(--sub);padding:36px 12px}
+/* 编辑弹窗 */
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.mask.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:640px;border-radius:18px 18px 0 0;max-height:92vh;overflow:auto;padding:18px 18px 26px}
+@media(min-width:680px){.mask{align-items:center}.sheet{border-radius:18px;max-height:88vh}}
+.sheet h2{margin:0 0 4px;font-size:17px}
+.sheet .sub{font-size:12px;color:var(--sub);margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.sheet-foot{display:flex;gap:10px;margin-top:18px}
+.sheet-foot .btn{flex:1}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(16px);background:#111827;color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:#b91c1c}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;box-shadow:0 -3px 14px rgba(0,0,0,.06);z-index:20}
+.savebar .wrap{display:flex;align-items:center;gap:10px}
+.savebar .st{font-size:12px;color:var(--sub);flex:1}
+.pending{display:inline-block;background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:6px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+.link{color:var(--primary);text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div>
+      <h1 id="hdTitle">设置项后台管理</h1>
+      <p id="hdSub">修改后保存到 GitHub，所有手机刷新即可看到</p>
+    </div>
+    <div class="hd-actions">
+      <button class="hd-btn" id="langBtn">EN</button>
+      <button class="hd-btn" id="logoutBtn" style="display:none">退出</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- 登录配置 -->
+  <div class="card" id="loginCard">
+    <h2 id="loginTitle">🔑 连接到云端仓库</h2>
+    <div class="hintbox" id="loginHint">
+      首次使用需要填写 GitHub 仓库信息。Token 只保存在你当前浏览器，用于读写仓库里的 data.json，不会写进网页、别人看不到。
+    </div>
+    <div class="grid2">
+      <div><label>用户名 (owner)</label><input id="cfgOwner" placeholder="例如: your-name"></div>
+      <div><label>仓库名 (repo)</label><input id="cfgRepo" placeholder="例如: ultrasound-settings"></div>
+    </div>
+    <label>Personal Access Token</label>
+    <input id="cfgToken" type="password" placeholder="ghp_... 开头" autocomplete="off">
+    <div class="row" style="margin-top:14px">
+      <div class="shrink"><button class="btn btn-primary" id="connectBtn">连接并加载数据</button></div>
+    </div>
+    <div class="errbox" id="loginErr"></div>
+  </div>
+
+  <!-- 主管理区 -->
+  <div id="mainArea" style="display:none">
+    <div class="card">
+      <h2 id="statusTitle">📡 云端状态</h2>
+      <div class="status">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">未加载</span>
+        <span id="pendingWrap"></span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="shrink"><button class="btn btn-ghost btn-sm" id="reloadBtn">重新加载</button></div>
+        <div class="shrink"><button class="btn btn-ghost btn-sm" id="downloadBtn">导出 data.json</button></div>
+        <div class="shrink"><label class="btn btn-ghost btn-sm" style="display:inline-block;margin:0">导入 JSON<input type="file" id="importFile" accept=".json" style="display:none"></label></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input type="search" id="q" placeholder="搜索设置项…">
+        <select id="filterCat"><option value="__all__">全部分类</option></select>
+        <span class="count" id="count"></span>
+        <button class="btn btn-primary btn-sm" id="addBtn">＋ 新增</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th style="width:56px">序号</th><th>设置项 / 位置</th><th>当前值</th><th>控件</th><th style="width:104px">操作</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="mask" id="editMask">
+  <div class="sheet">
+    <h2 id="editTitle">编辑设置项</h2>
+    <div class="sub" id="editSub">中英文两个版本都要填写，搜索时会同时匹配</div>
+    <div class="grid2">
+      <div><label>所在页面（中文）</label><input id="f_p_zh" placeholder="常规 › 图像"></div>
+      <div><label>Page (English)</label><input id="f_p_en" placeholder="General › Image"></div>
+      <div><label>分组（中文）</label><input id="f_g_zh" placeholder="图像设置"></div>
+      <div><label>Group (English)</label><input id="f_g_en" placeholder="Image Settings"></div>
+      <div><label>设置项（中文）*</label><input id="f_t_zh" placeholder="时间格式"></div>
+      <div><label>Item (English) *</label><input id="f_t_en" placeholder="Time Format"></div>
+      <div><label>当前值（中文）</label><input id="f_v_zh" placeholder="24小时"></div>
+      <div><label>Value (English)</label><input id="f_v_en" placeholder="24-hour"></div>
+      <div><label>控件类型（中文）</label><input id="f_c_zh" placeholder="下拉选择"></div>
+      <div><label>Control (English)</label><input id="f_c_en" placeholder="Dropdown"></div>
+    </div>
+    <label>备注 / 问题</label>
+    <textarea id="f_note" placeholder="可选"></textarea>
+    <div class="hintbox warn" id="pinyinHint">保存时会自动为中文字段生成拼音与首字母，确保拼音搜索仍然有效。</div>
+    <div class="sheet-foot">
+      <button class="btn btn-ghost" id="cancelEdit">取消</button>
+      <button class="btn btn-primary" id="saveEdit">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="savebar" id="savebar" style="display:none">
+  <div class="wrap">
+    <span class="st" id="saveStatus">所有更改已保存</span>
+    <button class="btn btn-primary" id="commitBtn">⬆ 发布到云端</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var API='https://api.github.com';
+var LANG='zh';
+var CFG={owner:'',repo:'',token:'',branch:'main',path:'data.json'};
+var DATA=null, DIRTY=false, EDIT_ID=null, FILTER='__all__';
+
+var I18N={
+ zh:{title:'设置项后台管理',sub:'修改后保存到 GitHub，所有手机刷新即可看到',
+  loginTitle:'🔑 连接到云端仓库',loginHint:'首次使用需要填写 GitHub 仓库信息。Token 只保存在你当前浏览器，用于读写仓库里的 data.json，不会写进网页、别人看不到。',
+  owner:'用户名 (owner)',repo:'仓库名 (repo)',token:'Personal Access Token',connect:'连接并加载数据',
+  cloud:'📡 云端状态',notload:'未加载',ok:'已连接',reload:'重新加载',download:'导出 data.json',import:'导入 JSON',
+  search:'搜索设置项…',allCat:'全部分类',count:function(a,b){return '显示 '+a+' / '+b+' 项';},add:'＋ 新增',
+  no:'序号',item:'设置项 / 位置',value:'当前值',control:'控件',ops:'操作',empty:'没有匹配的设置项',
+  edit:'编辑',del:'删除',editTitle:'编辑设置项',addTitle:'新增设置项',editSub:'中英文两个版本都要填写，搜索时会同时匹配',
+  pinyin:'保存时会自动为中文字段生成拼音与首字母，确保拼音搜索仍然有效。',
+  cancel:'取消',save:'保存',saved:'所有更改已保存',pending:'有未发布的更改',publish:'⬆ 发布到云端',
+  logout:'退出',savedOk:'✓ 已发布到云端，所有手机刷新即可看到',savedFail:'发布失败',needCfg:'请填写用户名、仓库名和 Token',
+  loadOk:'数据已加载',loadFail:'加载失败',confirmDel:'确定删除这条设置项吗？',confirmImport:'导入会替换当前全部数据，确定继续吗？',
+  imported:'已导入',needLogin:'请先在上方连接云端仓库',shaMissing:'仓库中还没有 data.json，将新建',
+  loginFail:'连接失败，请检查用户名/仓库名/Token 是否正确，且 Token 具备 repo 权限',loggedOut:'已退出',
+  fillName:'请填写设置项名称',savedLocal:'已保存（未发布）'},
+ en:{title:'Settings Admin',sub:'Save to GitHub; all phones see updates after refresh',
+  loginTitle:'🔑 Connect to cloud repository',loginHint:'First time setup: fill in GitHub repo info. The token is stored only in this browser and never embedded in the page.',
+  owner:'Owner',repo:'Repository',token:'Personal Access Token',connect:'Connect & load data',
+  cloud:'📡 Cloud status',notload:'Not loaded',ok:'Connected',reload:'Reload',download:'Export data.json',import:'Import JSON',
+  search:'Search settings…',allCat:'All categories',count:function(a,b){return a+' / '+b+' items';},add:'＋ Add',
+  no:'No.',item:'Item / Location',value:'Value',control:'Control',ops:'Actions',empty:'No matching items',
+  edit:'Edit',del:'Delete',editTitle:'Edit item',addTitle:'Add item',editSub:'Fill both languages; search matches both',
+  pinyin:'Pinyin and initials are generated automatically on save to keep pinyin search working.',
+  cancel:'Cancel',save:'Save',saved:'All changes saved',pending:'Unpublished changes',publish:'⬆ Publish',
+  logout:'Logout',savedOk:'✓ Published — all phones see updates after refresh',savedFail:'Publish failed',needCfg:'Fill in owner, repo and token',
+  loadOk:'Data loaded',loadFail:'Load failed',confirmDel:'Delete this item?',confirmImport:'Import replaces all data. Continue?',
+  imported:'Imported',needLogin:'Connect the cloud repo first',shaMissing:'No data.json yet; will create',
+  loginFail:'Connection failed. Check owner/repo/token and repo scope.',loggedOut:'Logged out',
+  fillName:'Item name required',savedLocal:'Saved (not published)'}
+};
+function T(){return I18N[LANG];}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function toast(msg,err){var t=$('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');clearTimeout(t._t);t._t=setTimeout(function(){t.className='toast';},2200);}
+function setStatus(cls,text){$('statusDot').className='dot'+(cls?' '+cls:'');$('statusText').textContent=text;}
+
+function loadCfg(){try{var c=JSON.parse(localStorage.getItem('usettings_admin_cfg')||'{}');CFG.owner=c.owner||'';CFG.repo=c.repo||'';CFG.token=c.token||'';CFG.branch=c.branch||'main';CFG.path=c.path||'data.json';}catch(e){}}
+function saveCfg(){localStorage.setItem('usettings_admin_cfg',JSON.stringify(CFG));}
+function apiHeaders(){return {'Accept':'application/vnd.github+json','Authorization':'Bearer '+CFG.token,'X-GitHub-Api-Version':'2022-11-28'};}
+
+function applyLang(){
+  var t=T();
+  $('hdTitle').textContent=t.title;$('hdSub').textContent=t.sub;
+  $('loginTitle').textContent=t.loginTitle;$('loginHint').textContent=t.loginHint;
+  $('cfgOwner').placeholder=t.owner;$('cfgRepo').placeholder=t.repo;$('cfgToken').placeholder=t.token;
+  $('connectBtn').textContent=t.connect;$('statusTitle').textContent=t.cloud;
+  $('reloadBtn').textContent=t.reload;$('downloadBtn').textContent=t.download;
+  try{var pn=$('importFile').parentNode;if(pn.childNodes[0])pn.childNodes[0].nodeValue=t.import;}catch(e){}
+  $('q').placeholder=t.search;$('addBtn').textContent=t.add;
+  $('filterCat').options[0].textContent=t.allCat;
+  $('editTitle').textContent=EDIT_ID?t.editTitle:t.addTitle;$('editSub').textContent=t.editSub;
+  $('pinyinHint').textContent=t.pinyin;$('cancelEdit').textContent=t.cancel;$('saveEdit').textContent=t.save;
+  $('saveStatus').textContent=DIRTY?t.pending:t.saved;$('commitBtn').textContent=t.publish;
+  $('logoutBtn').textContent=t.logout;
+  document.documentElement.lang=LANG==='zh'?'zh-CN':'en';
+  $('langBtn').textContent=LANG==='zh'?'EN':'中';
+  renderTable();
+}
+
+// ---- GitHub API ----
+function fetchData(){
+  return fetch(API+'/repos/'+encodeURIComponent(CFG.owner)+'/'+encodeURIComponent(CFG.repo)+'/contents/'+encodeURIComponent(CFG.path)+'?ref='+encodeURIComponent(CFG.branch)+'&t='+Date.now(),
+    {headers:apiHeaders(),cache:'no-store'})
+    .then(function(r){
+      if(r.status===404) return {notFound:true};
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }).then(function(j){
+      if(j.notFound) return {data:{meta:{},items:[]},sha:null};
+      var content=(j.content||'').replace(/\s/g,'');
+      var txt;
+      try{txt=decodeURIComponent(escape(atob(content)));}catch(e){txt=atob(content);}
+      return {data:JSON.parse(txt),sha:j.sha};
+    });
+}
+function commitData(){
+  if(!DATA) return;
+  setStatus('load','Publishing…');
+  var txt=JSON.stringify(DATA);
+  var b64=btoa(unescape(encodeURIComponent(txt)));
+  var body={message:'Update settings data ('+new Date().toISOString()+')',content:b64,branch:CFG.branch};
+  if(DATA_SHA) body.sha=DATA_SHA;
+  return fetch(API+'/repos/'+encodeURIComponent(CFG.owner)+'/'+encodeURIComponent(CFG.repo)+'/contents/'+encodeURIComponent(CFG.path),
+    {method:'PUT',headers:Object.assign(apiHeaders(),{'Content-Type':'application/json'}),body:JSON.stringify(body)})
+    .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.message||('HTTP '+r.status));});return r.json();})
+    .then(function(j){DATA_SHA=j.content&&j.content.sha;DIRTY=false;setStatus('ok',T().ok);applyLang();toast(T().savedOk);})
+    .catch(function(e){setStatus('err',T().savedFail);toast(T().savedFail+': '+e.message,true);});
+}
+var DATA_SHA=null;
+
+// ---- 拼音生成（简化版：常用字映射 + 保留英文） ----
+var PINYIN_MAP={"一":"yi","三":"san","上":"shang","下":"xia","不":"bu","与":"yu","中":"zhong","为":"wei","主":"zhu","义":"yi","事":"shi","二":"er","于":"yu","云":"yun","五":"wu","交":"jiao","产":"chan","亮":"liang","人":"ren","仅":"jin","从":"cong","他":"ta","令":"ling","件":"jian","份":"fen","优":"you","会":"hui","传":"chuan","估":"gu","位":"wei","低":"di","体":"ti","何":"he","余":"yu","作":"zuo","使":"shi","例":"li","侧":"ce","保":"bao","信":"xin","值":"zhi","偏":"pian","停":"ting","储":"chu","像":"xiang","儿":"er","允":"yun","充":"chong","先":"xian","光":"guang","克":"ke","入":"ru","全":"quan","公":"gong","关":"guan","其":"qi","具":"ju","兼":"jian","内":"nei","再":"zai","写":"xie","冻":"dong","准":"zhun","出":"chu","分":"fen","切":"qie","列":"lie","删":"shan","别":"bie","到":"dao","制":"zhi","刷":"shua","刺":"ci","刻":"ke","剂":"ji","前":"qian","副":"fu","功":"gong","加":"jia","务":"wu","动":"dong","助":"zhu","勒":"lei","包":"bao","化":"hua","区":"qu","医":"yi","十":"shi","升":"sheng","单":"dan","南":"nan","占":"zhan","卡":"ka","印":"yin","危":"wei","即":"ji","卵":"luan","压":"ya","厚":"hou","参":"can","及":"ji","双":"shuang","取":"qu","变":"bian","口":"kou","只":"zhi","可":"ke","台":"tai","右":"you","号":"hao","合":"he","同":"tong","名":"ming","后":"hou","否":"fou","含":"han","启":"qi","告":"gao","周":"zhou","命":"ming","和":"he","响":"xiang","器":"qi","囊":"nang","回":"hui","因":"yin","围":"wei","固":"gu","国":"guo","图":"tu","圆":"yuan","在":"zai","地":"di","场":"chang","址":"zhi","均":"jun","垂":"chui","型":"xing","域":"yu","基":"ji","填":"tian","增":"zeng","墨":"mo","声":"sheng","处":"chu","备":"bei","复":"fu","外":"wai","多":"duo","大":"da","天":"tian","失":"shi","头":"tou","如":"ru","始":"shi","姓":"xing","委":"wei","媒":"mei","子":"zi","字":"zi","存":"cun","学":"xue","完":"wan","定":"ding","实":"shi","室":"shi","容":"rong","宽":"kuan","密":"mi","寸":"cun","对":"dui","导":"dao","封":"feng","射":"she","将":"jiang","小":"xiao","尚":"shang","尺":"chi","局":"ju","屏":"ping","展":"zhan","工":"gong","左":"zuo","已":"yi","常":"chang","幅":"fu","幕":"mu","平":"ping","年":"nian","并":"bing","序":"xu","库":"ku","应":"ying","底":"di","度":"du","建":"jian","开":"kai","异":"yi","式":"shi","引":"yin","弹":"dan","强":"qiang","当":"dang","录":"lu","形":"xing","彩":"cai","影":"ying","径":"jing","微":"wei","心":"xin","必":"bi","志":"zhi","快":"kuai","态":"tai","性":"xing","总":"zong","恢":"hui","息":"xi","情":"qing","成":"cheng","或":"huo","截":"jie","户":"hu","所":"suo","手":"shou","打":"da","托":"tuo","扩":"kuo","扫":"sao","扬":"yang","护":"hu","报":"bao","拉":"la","拨":"bo","择":"ze","持":"chi","指":"zhi","按":"an","挨":"ai","捉":"zhuo","捕":"bu","损":"sun","换":"huan","据":"ju","捷":"jie","授":"shou","探":"tan","接":"jie","控":"kong","掩":"yan","描":"miao","提":"ti","搜":"sou","摄":"she","摸":"mo","播":"bo","操":"cao","擎":"qing","支":"zhi","收":"shou","放":"fang","教":"jiao","数":"shu","整":"zheng","文":"wen","断":"duan","新":"xin","方":"fang","旋":"xuan","无":"wu","日":"ri","旧":"jiu","时":"shi","明":"ming","映":"ying","是":"shi","显":"xian","普":"pu","景":"jing","暂":"zan","曲":"qu","更":"geng","最":"zui","月":"yue","有":"you","服":"fu","期":"qi","未":"wei","末":"mo","本":"ben","机":"ji","权":"quan","杏":"xing","束":"shu","条":"tiao","板":"ban","构":"gou","析":"xi","果":"guo","查":"cha","标":"biao","校":"xiao","样":"yang","格":"ge","框":"kuang","档":"dang","检":"jian","模":"mo","次":"ci","止":"zhi","正":"zheng","步":"bu","殊":"shu","段":"duan","比":"bi","毫":"hao","气":"qi","水":"shui","油":"you","法":"fa","泡":"pao","波":"bo","注":"zhu","洁":"jie","活":"huo","流":"liu","浅":"qian","测":"ce","浏":"liu","消":"xiao","深":"shen","添":"tian","清":"qing","温":"wen","源":"yuan","滑":"hua","滤":"lv","演":"yan","激":"ji","灰":"hui","点":"dian","热":"re","焦":"jiao","片":"pian","版":"ban","物":"wu","特":"te","状":"zhuang","率":"lv","现":"xian","理":"li","生":"sheng","用":"yong","甲":"jia","电":"dian","界":"jie","留":"liu","略":"lve","病":"bing","登":"deng","百":"bai","的":"de","益":"yi","盘":"pan","目":"mu","直":"zhi","相":"xiang","省":"sheng","看":"kan","码":"ma","硬":"ying","确":"que","示":"shi","禁":"jin","离":"li","科":"ke","秒":"miao","积":"ji","称":"cheng","移":"yi","程":"cheng","空":"kong","穿":"chuan","突":"tu","窗":"chuang","立":"li","端":"duan","符":"fu","第":"di","简":"jian","算":"suan","管":"guan","箭":"jian","米":"mi","类":"lei","粗":"cu","精":"jing","糊":"hu","系":"xi","素":"su","索":"suo","紧":"jin","级":"ji","线":"xian","组":"zu","细":"xi","织":"zhi","终":"zhong","结":"jie","络":"luo","绝":"jue","统":"tong","继":"ji","续":"xu","维":"wei","绿":"lv","缀":"zhui","缓":"huan","编":"bian","缘":"yuan","缩":"suo","网":"wang","置":"zhi","翻":"fan","耦":"ou","聆":"ling","联":"lian","聚":"ju","肝":"gan","股":"gu","肱":"gong","肾":"shen","肿":"zhong","背":"bei","胎":"tai","能":"neng","脏":"zang","脚":"jiao","腺":"xian","膜":"mo","自":"zi","至":"zhi","航":"hang","般":"ban","色":"se","节":"jie","英":"ying","范":"fan","荷":"he","获":"huo","藏":"cang","血":"xue","行":"xing","表":"biao","装":"zhuang","要":"yao","规":"gui","视":"shi","览":"lan","角":"jiao","解":"jie","触":"chu","言":"yan","警":"jing","计":"ji","认":"ren","议":"yi","记":"ji","许":"xu","论":"lun","设":"she","证":"zheng","评":"ping","识":"shi","诊":"zhen","词":"ci","试":"shi","询":"xun","详":"xiang","语":"yu","误":"wu","请":"qing","读":"du","调":"diao","谱":"pu","负":"fu","败":"bai","账":"zhang","质":"zhi","资":"zi","超":"chao","距":"ju","跨":"kua","路":"lu","踩":"cai","身":"shen","转":"zhuan","软":"ruan","载":"zai","辅":"fu","辑":"ji","输":"shu","辨":"bian","边":"bian","过":"guo","近":"jin","进":"jin","远":"yuan","连":"lian","述":"shu","逆":"ni","选":"xuan","通":"tong","速":"su","造":"zao","邮":"you","部":"bu","配":"pei","采":"cai","释":"shi","重":"zhong","野":"ye","量":"liang","针":"zhen","钟":"zhong","钮":"niu","锁":"suo","错":"cuo","键":"jian","镜":"jing","长":"zhang","门":"men","闭":"bi","问":"wen","间":"jian","阵":"zhen","阶":"jie","院":"yuan","除":"chu","险":"xian","随":"sui","隐":"yin","隔":"ge","集":"ji","需":"xu","青":"qing","非":"fei","靠":"kao","面":"mian","韩":"han","音":"yin","页":"ye","顶":"ding","项":"xiang","预":"yu","频":"pin","题":"ti","颜":"yan","额":"e","风":"feng","首":"shou","验":"yan","骨":"gu","高":"gao","麦":"mai","黄":"huang","默":"mo","鼠":"shu","龄":"ling"};
+function toPinyin(text){
+  text=String(text||'');
+  var full='',init='';
+  for(var i=0;i<text.length;i++){
+    var ch=text[i];
+    if(/[a-z0-9]/i.test(ch)){full+=ch.toLowerCase();init+=ch.toLowerCase();}
+    else if(PINYIN_MAP[ch]){full+=PINYIN_MAP[ch];init+=PINYIN_MAP[ch][0];}
+    else if(/\s/.test(ch)){}
+    else{full+=ch;init+=ch;}
+  }
+  full=full.replace(/[^a-z0-9]/g,'');
+  init=init.replace(/[^a-z0-9]/g,'');
+  return [full,init];
+}
+function normForSearch(s){return String(s||'').toLowerCase().replace(/[\s·•–—\-_\/\\()（）“”"'\u3001,\.]/g,'');}
+
+// ---- 数据操作 ----
+function rebuildPinyin(it){
+  var p=toPinyin(it.p[0]),g=toPinyin(it.g[0]),t=toPinyin(it.t[0]);
+  it.p[2]=p[0];it.p[3]=p[1];it.g[2]=g[0];it.g[3]=g[1];it.t[2]=t[0];it.t[3]=t[1];
+}
+function nextId(){var m=0;(DATA.items||[]).forEach(function(it){m=Math.max(m,+it.id||0);});return m+1;}
+function cats(){var s={};(DATA.items||[]).forEach(function(it){s[it.p[0].split(' › ')[0]]=1;});return Object.keys(s);}
+function markDirty(){DIRTY=true;$('saveStatus').textContent=T().pending;$('saveStatus').innerHTML=T().pending+'<span class="pending">!</span>';}
+
+function renderTable(){
+  if(!DATA)return;
+  var t=T(),q=$('q').value.trim(), f=$('filterCat').value;
+  var list=(DATA.items||[]).filter(function(it){
+    if(f!=='__all__'&&it.p[0].split(' › ')[0]!==f)return false;
+    if(!q)return true;
+    var nq=normForSearch(q);
+    return [it.t[0],it.t[1],it.t[2],it.t[3],it.g[0],it.g[1],it.p[0],it.p[1],it.v[0],it.v[1]].some(function(x){return normForSearch(x).indexOf(nq)>=0;});
+  });
+  $('count').textContent=t.count(list.length,(DATA.items||[]).length);
+  if(!list.length){$('tbody').innerHTML='<tr><td colspan="5" class="empty">'+t.empty+'</td></tr>';return;}
+  $('tbody').innerHTML=list.map(function(it){
+    return '<tr data-id="'+it.id+'">'
+      +'<td class="mono">'+esc(it.id)+'</td>'
+      +'<td><div><b>'+esc(it.t[0])+'</b> <span style="color:#9aa4b5">/ '+esc(it.t[1])+'</span></div>'
+        +'<div class="path-sm">'+esc(it.p[0])+' › '+esc(it.g[0])+'</div></td>'
+      +'<td><span class="tag">'+esc(it.v[0]||'—')+'</span></td>'
+      +'<td><span class="tag p">'+esc(it.c[0]||'—')+'</span></td>'
+      +'<td><div class="ops"><button class="btn btn-ghost btn-sm" data-op="edit">'+t.edit+'</button>'
+        +'<button class="btn btn-danger btn-sm" data-op="del">'+t.del+'</button></div></td>'
+    +'</tr>';
+  }).join('');
+}
+function refreshCatFilter(){
+  var cur=$('filterCat').value;
+  var opts='<option value="__all__">'+T().allCat+'</option>';
+  cats().forEach(function(c){opts+='<option value="'+esc(c)+'">'+esc(c)+'</option>';});
+  $('filterCat').innerHTML=opts;
+  if(cats().indexOf(cur)>=0)$('filterCat').value=cur;
+}
+function openEditor(id){
+  EDIT_ID=id;var t=T();
+  $('editTitle').textContent=id?t.editTitle:t.addTitle;
+  var it=id?(DATA.items||[]).filter(function(x){return +x.id===+id;})[0]:null;
+  var v=it||{p:['','','',''],g:['','','',''],t:['','','',''],v:['',''],c:['',''],n:''};
+  $('f_p_zh').value=v.p[0]||'';$('f_p_en').value=v.p[1]||'';
+  $('f_g_zh').value=v.g[0]||'';$('f_g_en').value=v.g[1]||'';
+  $('f_t_zh').value=v.t[0]||'';$('f_t_en').value=v.t[1]||'';
+  $('f_v_zh').value=v.v[0]||'';$('f_v_en').value=v.v[1]||'';
+  $('f_c_zh').value=v.c[0]||'';$('f_c_en').value=v.c[1]||'';
+  $('f_note').value=v.n||'';
+  $('editMask').classList.add('show');
+}
+function closeEditor(){$('editMask').classList.remove('show');}
+function saveEditor(){
+  var t=T();
+  var tzh=$('f_t_zh').value.trim(),ten=$('f_t_en').value.trim();
+  if(!tzh&&!ten){toast(t.fillName,true);return;}
+  var obj={
+    p:[ $('f_p_zh').value.trim()||'未分类', $('f_p_en').value.trim()||'Uncategorized','',''],
+    g:[ $('f_g_zh').value.trim()||'其他', $('f_g_en').value.trim()||'Other','',''],
+    t:[ tzh||ten, ten||tzh,'',''],
+    v:[ $('f_v_zh').value.trim(), $('f_v_en').value.trim()],
+    c:[ $('f_c_zh').value.trim(), $('f_c_en').value.trim()],
+    n: $('f_note').value.trim()
+  };
+  rebuildPinyin(obj);
+  if(EDIT_ID){
+    var it=(DATA.items||[]).filter(function(x){return +x.id===+EDIT_ID;})[0];
+    if(it){it.p=obj.p;it.g=obj.g;it.t=obj.t;it.v=obj.v;it.c=obj.c;it.n=obj.n;}
+  }else{
+    obj.id=nextId();
+    DATA.items.push(obj);
+  }
+  DATA.meta=DATA.meta||{};DATA.meta.count=DATA.items.length;
+  markDirty();refreshCatFilter();renderTable();closeEditor();
+  toast(t.savedLocal);
+}
+
+// ---- 事件 ----
+loadCfg();
+if(CFG.owner&&CFG.repo&&CFG.token){
+  $('cfgOwner').value=CFG.owner;$('cfgRepo').value=CFG.repo;$('cfgToken').value=CFG.token;
+}
+applyLang();
+
+$('langBtn').addEventListener('click',function(){LANG=LANG==='zh'?'en':'zh';CFG.lang=LANG;saveCfg();applyLang();});
+if(CFG.lang)LANG=CFG.lang;applyLang();
+
+$('connectBtn').addEventListener('click',function(){
+  CFG.owner=$('cfgOwner').value.trim();CFG.repo=$('cfgRepo').value.trim();CFG.token=$('cfgToken').value.trim();
+  if(!CFG.owner||!CFG.repo||!CFG.token){toast(T().needCfg,true);return;}
+  saveCfg();setStatus('load','Loading…');
+  fetchData().then(function(res){
+    DATA=res.data;DATA_SHA=res.sha;DIRTY=false;
+    $('loginCard').style.display='none';$('mainArea').style.display='block';$('savebar').style.display='block';$('logoutBtn').style.display='block';
+    refreshCatFilter();applyLang();setStatus('ok',T().ok);toast(T().loadOk);
+  }).catch(function(e){setStatus('err',T().loadFail);$('loginErr').textContent=T().loginFail+' ('+e.message+')';$('loginErr').classList.add('show');});
+});
+$('logoutBtn').addEventListener('click',function(){
+  CFG.token='';saveCfg();$('cfgToken').value='';DATA=null;DIRTY=false;
+  $('loginCard').style.display='block';$('mainArea').style.display='none';$('savebar').style.display='none';$('logoutBtn').style.display='none';
+  toast(T().loggedOut);
+});
+$('reloadBtn').addEventListener('click',function(){
+  if(!CFG.token){toast(T().needLogin,true);return;}
+  setStatus('load','Loading…');
+  fetchData().then(function(res){DATA=res.data;DATA_SHA=res.sha;DIRTY=false;refreshCatFilter();applyLang();setStatus('ok',T().ok);toast(T().loadOk);})
+    .catch(function(e){setStatus('err',T().loadFail);toast(T().loadFail+': '+e.message,true);});
+});
+$('commitBtn').addEventListener('click',function(){if(!CFG.token){toast(T().needLogin,true);return;}commitData();});
+$('downloadBtn').addEventListener('click',function(){
+  if(!DATA)return;
+  var blob=new Blob([JSON.stringify(DATA)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='data.json';a.click();URL.revokeObjectURL(a.href);
+});
+$('importFile').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(){
+    try{var d=JSON.parse(r.result);if(!d.items)throw 0;
+      if(!confirm(T().confirmImport))return;
+      DATA=d;DATA.items.forEach(rebuildPinyin);DATA.meta=DATA.meta||{};DATA.meta.count=DATA.items.length;
+      markDirty();refreshCatFilter();renderTable();toast(T().imported);
+    }catch(err){toast('Invalid JSON',true);}
+  };r.readAsText(f);e.target.value='';
+});
+$('q').addEventListener('input',renderTable);
+$('filterCat').addEventListener('change',renderTable);
+$('addBtn').addEventListener('click',function(){openEditor(null);});
+$('cancelEdit').addEventListener('click',closeEditor);
+$('saveEdit').addEventListener('click',saveEditor);
+$('editMask').addEventListener('click',function(e){if(e.target===$('editMask'))closeEditor();});
+$('tbody').addEventListener('click',function(e){
+  var btn=e.target.closest('[data-op]');if(!btn)return;
+  var id=+btn.closest('tr').getAttribute('data-id');
+  if(btn.getAttribute('data-op')==='edit'){openEditor(id);}
+  else{
+    if(!confirm(T().confirmDel))return;
+    DATA.items=DATA.items.filter(function(x){return +x.id!==id;});
+    DATA.meta=DATA.meta||{};DATA.meta.count=DATA.items.length;
+    markDirty();refreshCatFilter();renderTable();
+  }
+});
+})();
+</script>
+</body>
+</html>
